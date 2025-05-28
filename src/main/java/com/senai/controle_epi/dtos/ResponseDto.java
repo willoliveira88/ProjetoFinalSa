@@ -1,28 +1,15 @@
-package com.senai.controle_epi.models;
+package com.senai.controle_epi.dtos;
+
+public class ResponseDto {
 
 
-import jakarta.persistence.*;
-import lombok.Data;
 
-@Entity
-@Table(name="USUARIO")
-@Data
-public class UsuarioModel {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, name="nome")
     private String nome;
-
-    @Column(nullable = false, unique = true, name="email")
     private String email;
-
-    @Column(name="senha")
     private String senha;
 
-    public UsuarioModel() {
+    public ResponseDto() {
     }
 
     public Long getId() {
@@ -41,11 +28,11 @@ public class UsuarioModel {
         this.nome = nome;
     }
 
-    public String getLogin() {
+    public String getEmail() {
         return email;
     }
 
-    public void setLogin(String email) {
+    public void setEmail(String login) {
         this.email = email;
     }
 
@@ -56,4 +43,5 @@ public class UsuarioModel {
     public void setSenha(String senha) {
         this.senha = senha;
     }
+
 }

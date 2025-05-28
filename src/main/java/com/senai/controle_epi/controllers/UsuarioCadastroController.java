@@ -1,19 +1,18 @@
 package com.senai.controle_epi.controllers;
 
-import com.senai.controle_epi.dtos.UsuarioSessaoDto;
 import com.senai.controle_epi.Sessao.ControleSessao;
+import com.senai.controle_epi.dtos.RequestDto;
+import com.senai.controle_epi.dtos.UsuarioSessaoDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/home")
-public class HomeController {
+public class UsuarioCadastroController {
 
-    @GetMapping
-    public String obterHome(Model model, HttpServletRequest request){
+    @GetMapping("/usuariocadastro")
+    public String viewCadastroUsuario(Model model, HttpServletRequest request){
 
         UsuarioSessaoDto usuarioSessao = ControleSessao.obter(request);
 
@@ -22,7 +21,9 @@ public class HomeController {
             return "redirect:/login";
         }
 
-        model.addAttribute("nomeUsuario",usuarioSessao.getNome());
-        return "home";
+        RequestDto usuarioDto = new RequestDto();
+        model.addAttribute("usuarioDto", usuarioDto);
+
+        return "usuariocadastro";
     }
 }

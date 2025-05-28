@@ -1,22 +1,20 @@
 package com.senai.controle_epi.dtos;
 
+public class ListaUsuariosDto {
 
-
-public class UsuarioDto {
-
+    private Long id;
     private String nome;
-
     private String email;
 
-    private String senha;
-
-    public UsuarioDto(String nome, String login, String senha) {
-        this.nome = nome;
-        this.email = login;
-        this.senha = senha;
+    public ListaUsuariosDto() {
     }
 
-    public UsuarioDto() {
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getNome() {
@@ -34,14 +32,4 @@ public class UsuarioDto {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
 }
-
-

@@ -1,59 +1,83 @@
 package com.senai.controle_epi.controllers;
 
-import com.senai.controle_epi.dtos.UsuarioRequestDto;
+import com.senai.controle_epi.dtos.*;
+import com.senai.controle_epi.exception.InvalidOperationException;
 import com.senai.controle_epi.service.UsuarioService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 @Controller
-@RequestMapping("/usuarios")
+@RequestMapping("/usuario")
 public class UsuarioController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    UsuarioService service;
 
-    // Listar todos os usuários
-    @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("usuarios", usuarioService.listarTodos());
-        return "usuarios/listausuarios";
+    //--Método para cadastrar usuário a partir da tela de login
+    @PostMapping
+    public String realizarCadastro(@ModelAttribute("requestDto") RequestDto requestDto){
+
+        MensagemDto messagem = service.adicionarUsuario(requestDto);
+
+        if (messagem.isSucesso()){
+            return "redirect:/cadastro?sucesso";
+        }
+
+        return "redirect:/cadastro?erro";
     }
 
-    // Formulário para cadastrar novo usuário
-    @GetMapping("/cadastrar")
-    public String formCadastrar(Model model) {
-        model.addAttribute("usuario", new UsuarioRequestDto());
-        return "usuarios/cadastrousuario";
+    //--Método para cadastar a partir da tela de lista de usuário
+    @PostMapping("/novo")
+    public String cadastrar(@ModelAttribute("requestDto") RequestDto requestDto){
+
+        MensagemDto mensagem = service.adicionarUsuario(requestDto);
+
+        if (mensagem.isSucesso()) {
+            return "redirect:/usuariolista";
+        }
+
+        return "redirect:/usuariocadastro?erro";
     }
 
-    // Salvar novo usuário
-    @PostMapping("/cadastrar")
-    public String salvar(@Valid @ModelAttribute("usuario") UsuarioRequestDto dto) {
-        usuarioService.criarUsuario(dto);
-        return "redirect:/usuarios";
+    @PostMapping("/{id}")
+    public String atualizar(@ModelAttribute("usuarioAtualizarDto") UsuarioAtualizarDto usuarioDto, @PathVariable Long id, RedirectAttributes redirectAttributes){
+
+        boolean retorno = false;
+
+        try {
+            retorno = service.atualizarUsuario(id, usuarioDto);
+        } catch (InvalidOperationException ex) {
+            redirectAttributes.addFlashAttribute("erro", ex.getMessage());
+            return "redirect:/usuarioatualizar/" + id;
+        }
+
+        if(retorno) {
+            return "redirect:/usuariolista";
+        }
+
+        System.out.println("vai para atualizar");
+
+        return "redirect:/usuarioatualizar/" + id.toString() + "?erro";
+
+
     }
 
-    // Formulário para editar usuário existente
-    @GetMapping("/editar/{id}")
-    public String formEditar(@PathVariable Long id, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorId(id));
-        return "usuarios/atualizarusuario";
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MensagemDto> excluir(@PathVariable Long id){
+
+        MensagemDto mensagem = service.removerUsuario(id);
+
+        if(mensagem.isSucesso()) {
+            return ResponseEntity.ok().body(mensagem);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem);
+        }
+
     }
 
-    // Atualizar usuário
-    @PostMapping("/editar/{id}")
-    public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("usuario") UsuarioRequestDto dto) {
-        usuarioService.atualizarUsuario(id, dto);
-        return "redirect:/usuarios";
-    }
-
-    // Excluir usuário
-    @PostMapping("/excluir/{id}")
-    public String excluir(@PathVariable Long id) {
-        usuarioService.excluirUsuario(id);
-        return "redirect:/usuarios";
-    }
 }

@@ -1,47 +1,51 @@
 package com.senai.controle_epi.controllers;
 
-import com.senai.controle_epi.dtos.UsuarioRequestDto;
-import com.senai.controle_epi.models.UsuarioModel;
-import com.senai.controle_epi.repository.UsuarioRepository;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
+import com.senai.controle_epi.dtos.*;
+import com.senai.controle_epi.service.UsuarioService;
+import com.senai.controle_epi.Sessao.ControleSessao;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/auth")
 public class AuthController {
 
-
     @Autowired
-    UsuarioRepository usuarioRepository;
+    UsuarioService service;
 
     @GetMapping("/login")
-    public String loginForm(Model model) {
-        model.addAttribute("usuario", new UsuarioRequestDto());
+    public String obterLogin(Model model){
+
+        LoginDto loginDto = new LoginDto();
+        model.addAttribute("loginDto",loginDto);
+
         return "login";
     }
 
     @PostMapping("/login")
-    public String login(@Valid @ModelAttribute("usuario") UsuarioRequestDto dto, HttpSession session, Model model) {
-        UsuarioModel usuario = usuarioRepository.findByEmail(dto.getEmail())
-                .filter(u -> u.getSenha().equals(dto.getSenha()))
-                .orElse(null);
+    public String login(@ModelAttribute("loginDto") LoginDto login, HttpServletRequest request){
 
-        if (usuario == null) {
-            model.addAttribute("erro", "E-mail ou senha inválidos");
-            return "login";
+        UsuarioSessaoDto usuarioSessao =  service.logar(login);
+
+        if (usuarioSessao.getId() != 0L){
+
+            ControleSessao.registrar(request, usuarioSessao);
+
+            return "redirect:/home";
         }
 
-        session.setAttribute("usuarioLogado", usuario);
-        return "redirect:/home";
+        return "redirect:/login?erro";
+
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/auth/login";
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request){
+
+        ControleSessao.encerrar(request);
+        return "redirect:/login";
+
     }
+
 }
